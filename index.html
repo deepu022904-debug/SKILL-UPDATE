@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Mate - Portfolio Builder</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; color: black; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Icon components using lucide
+    const Menu = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
+    const X = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    const Sun = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
+    const Moon = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+    const Save = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+    const Trash2 = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
+    const FileDown = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>;
+    const Plus = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const Pencil = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+    const Trash = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
+    const ExternalLink = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+    const Github = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>;
+    const Linkedin = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.722-2.006 1.422-.103.249-.129.597-.129.946v5.437h-3.554s.047-8.81 0-9.728h3.554v1.378c.43-.664 1.199-1.61 2.920-1.61 2.134 0 3.734 1.393 3.734 4.385v5.575zM5.337 8.855c-1.144 0-1.915-.759-1.915-1.709 0-.955.771-1.71 1.958-1.71 1.187 0 1.914.755 1.938 1.71 0 .95-.751 1.709-1.981 1.709zm1.581 11.597H3.715V9.724h3.203v10.728zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>;
+    const Mail = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+    const Phone = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+    const MapPin = ({ size = 24 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
+
+    const CodeMateApp = () => {
+      const [darkMode, setDarkMode] = useState(() => {
+        const saved = localStorage.getItem('codeMate_darkMode');
+        return saved ? JSON.parse(saved) : false;
+      });
+
+      const [currentPage, setCurrentPage] = useState('home');
+      const [menuOpen, setMenuOpen] = useState(false);
+
+      useEffect(() => {
+        localStorage.setItem('codeMate_darkMode', JSON.stringify(darkMode));
+      }, [darkMode]);
+
+      const bgClass = darkMode ? 'bg-gray-950' : 'bg-white';
+      const textClass = darkMode ? 'text-white' : 'text-gray-900';
+      const borderClass = darkMode ? 'border-gray-800' : 'border-gray-200';
+      const cardClass = darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200';
+
+      const navItems = ['Home', 'Dashboard', 'Learn', 'Videos', 'Quiz', 'Resume', 'Portfolio', 'AI Tutor'];
+
+      const renderPage = () => {
+        switch(currentPage) {
+          case 'portfolio':
+            return <PortfolioBuilder darkMode={darkMode} />;
+          case 'dashboard':
+            return <Dashboard darkMode={darkMode} />;
+          default:
+            return <HomePage darkMode={darkMode} />;
+        }
+      };
+
+      return (
+        <div className={`min-h-screen ${bgClass} ${textClass}`}>
+          {/* Navigation */}
+          <nav className={`border-b ${borderClass} ${darkMode ? 'bg-gray-900' : 'bg-white'} sticky top-0 z-50`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    Code Mate
+                  </div>
+                </div>
+
+                {/* Desktop Menu */}
+                <div className="hidden md:flex items-center gap-1">
+                  {navItems.map(item => (
+                    <button
+                      key={item}
+                      onClick={() => setCurrentPage(item.toLowerCase().replace(/\s/g, ''))}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === item.toLowerCase().replace(/\s/g, '')
+                          ? 'bg-blue-500 text-white'
+                          : darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Right Actions */}
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className={`p-2 rounded-lg ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-gray-100 text-gray-600'}`}
+                  >
+                    {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                  </button>
+
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="md:hidden p-2"
+                  >
+                    {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Mobile Menu */}
+              {menuOpen && (
+                <div className="md:hidden pb-4 space-y-2">
+                  {navItems.map(item => (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        setCurrentPage(item.toLowerCase().replace(/\s/g, ''));
+                        setMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium ${
+                        currentPage === item.toLowerCase().replace(/\s/g, '')
+                          ? 'bg-blue-500 text-white'
+                          : darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Main Content */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {renderPage()}
+          </main>
+        </div>
+      );
+    };
+
+    const HomePage = ({ darkMode }) => {
+      const bgGradient = darkMode 
+        ? 'from-gray-900 via-blue-900 to-gray-900' 
+        : 'from-blue-50 via-purple-50 to-pink-50';
+      const cardClass = darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200';
+
+      return (
+        <div className={`bg-gradient-to-b ${bgGradient} py-12 rounded-2xl mb-12`}>
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold mb-4">Welcome to Code Mate</h1>
+            <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Your complete learning and portfolio management platform
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: 'Learn Skills', desc: 'Comprehensive courses and tutorials' },
+              { title: 'Build Portfolio', desc: 'Showcase your projects professionally' },
+              { title: 'Track Progress', desc: 'Monitor your learning journey' }
+            ].map((item, i) => (
+              <div key={i} className={`border rounded-xl p-6 ${cardClass}`}>
+                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const Dashboard = ({ darkMode }) => {
+      const [portfolioStatus, setPortfolioStatus] = useState('Not Created');
+
+      useEffect(() => {
+        const portfolio = localStorage.getItem('portfolioData');
+        if (portfolio) {
+          try {
+            const data = JSON.parse(portfolio);
+            if (data.fullName) {
+              setPortfolioStatus('Created');
+            }
+          } catch {}
+        }
+      }, []);
+
+      const cardClass = darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200';
+      const statClass = darkMode ? 'text-blue-400' : 'text-blue-600';
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">Dashboard</h2>
+          
+          <div className={`border rounded-xl p-6 ${cardClass}`}>
+            <h3 className="text-xl font-semibold mb-4">Portfolio Status</h3>
+            <p className={`text-2xl font-bold ${statClass}`}>
+              {portfolioStatus}
+            </p>
+          </div>
+
+          <div className={`border rounded-xl p-6 ${cardClass}`}>
+            <h3 className="text-xl font-semibold mb-4">Quick Stats</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div><p className="text-sm text-gray-500">Skills Added</p><p className="text-2xl font-bold">0</p></div>
+              <div><p className="text-sm text-gray-500">Projects Created</p><p className="text-2xl font-bold">0</p></div>
+              <div><p className="text-sm text-gray-500">Certificates Earned</p><p className="text-2xl font-bold">0</p></div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const PortfolioBuilder = ({ darkMode }) => {
+      const [portfolioData, setPortfolioData] = useState(() => {
+        const saved = localStorage.getItem('portfolioData');
+        return saved ? JSON.parse(saved) : {
+          fullName: '', professionalTitle: '', aboutMe: '', profilePhoto: '',
+          email: '', phone: '', location: '', skills: [], education: [],
+          projects: [], certifications: [], experience: [], linkedin: '', github: ''
+        };
+      });
+
+      const [newSkill, setNewSkill] = useState('');
+      const [editingProjectIdx, setEditingProjectIdx] = useState(null);
+      const [editingEducationIdx, setEditingEducationIdx] = useState(null);
+      const [editingExperienceIdx, setEditingExperienceIdx] = useState(null);
+      const [editingCertIdx, setEditingCertIdx] = useState(null);
+      const [errors, setErrors] = useState({});
+
+      const cardClass = darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200';
+      const inputClass = darkMode 
+        ? 'bg-gray-800 border-gray-700 text-white' 
+        : 'bg-white border-gray-300 text-gray-900';
+
+      const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const isValidGithub = (url) => url.includes('github.com');
+      const isValidLinkedin = (url) => url.includes('linkedin.com');
+
+      const savePortfolio = () => {
+        const newErrors = {};
+        if (!portfolioData.fullName.trim()) newErrors.fullName = 'Name is required';
+        if (portfolioData.email && !isValidEmail(portfolioData.email)) newErrors.email = 'Invalid email';
+        if (portfolioData.github && !isValidGithub(portfolioData.github)) newErrors.github = 'Invalid GitHub URL';
+        if (portfolioData.linkedin && !isValidLinkedin(portfolioData.linkedin)) newErrors.linkedin = 'Invalid LinkedIn URL';
+
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          return;
+        }
+
+        localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+        setErrors({});
+        alert('Portfolio saved successfully!');
+      };
+
+      const clearPortfolio = () => {
+        if (window.confirm('Are you sure? This will clear all portfolio data.')) {
+          const empty = {
+            fullName: '', professionalTitle: '', aboutMe: '', profilePhoto: '',
+            email: '', phone: '', location: '', skills: [], education: [],
+            projects: [], certifications: [], experience: [], linkedin: '', github: ''
+          };
+          setPortfolioData(empty);
+          localStorage.removeItem('portfolioData');
+          setErrors({});
+        }
+      };
+
+      return (
+        <div className="space-y-8">
+          <h2 className="text-3xl font-bold">Portfolio Builder</h2>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Editor */}
+            <div className={`border rounded-xl p-6 ${cardClass} space-y-6 max-h-[90vh] overflow-y-auto`}>
+              <div>
+                <h3 className="text-2xl font-bold mb-6">Edit Your Portfolio</h3>
+
+                {/* Basic Info */}
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Full Name *</label>
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      value={portfolioData.fullName}
+                      onChange={(e) => setPortfolioData({...portfolioData, fullName: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                    {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Professional Title</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Full Stack Developer"
+                      value={portfolioData.professionalTitle}
+                      onChange={(e) => setPortfolioData({...portfolioData, professionalTitle: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">About Me</label>
+                    <textarea
+                      placeholder="Tell about yourself..."
+                      value={portfolioData.aboutMe}
+                      onChange={(e) => setPortfolioData({...portfolioData, aboutMe: e.target.value})}
+                      rows="4"
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Profile Photo URL</label>
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={portfolioData.profilePhoto}
+                      onChange={(e) => setPortfolioData({...portfolioData, profilePhoto: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-4 mb-6 pb-6 border-b border-gray-700">
+                  <h4 className="font-semibold">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Email</label>
+                      <input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={portfolioData.email}
+                        onChange={(e) => setPortfolioData({...portfolioData, email: e.target.value})}
+                        className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                      />
+                      {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Phone</label>
+                      <input
+                        type="tel"
+                        placeholder="+1 (555) 000-0000"
+                        value={portfolioData.phone}
+                        onChange={(e) => setPortfolioData({...portfolioData, phone: e.target.value})}
+                        className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Location</label>
+                    <input
+                      type="text"
+                      placeholder="City, Country"
+                      value={portfolioData.location}
+                      onChange={(e) => setPortfolioData({...portfolioData, location: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Social Links */}
+                <div className="space-y-4 mb-6 pb-6 border-b border-gray-700">
+                  <h4 className="font-semibold">Social Links</h4>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">LinkedIn</label>
+                    <input
+                      type="url"
+                      placeholder="https://linkedin.com/in/..."
+                      value={portfolioData.linkedin}
+                      onChange={(e) => setPortfolioData({...portfolioData, linkedin: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                    {errors.linkedin && <p className="text-red-500 text-sm mt-1">{errors.linkedin}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">GitHub</label>
+                    <input
+                      type="url"
+                      placeholder="https://github.com/..."
+                      value={portfolioData.github}
+                      onChange={(e) => setPortfolioData({...portfolioData, github: e.target.value})}
+                      className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+                    />
+                    {errors.github && <p className="text-red-500 text-sm mt-1">{errors.github}</p>}
+                  </div>
+                </div>
+
+                {/* Skills Section */}
+                <SkillsSection
+                  skills={portfolioData.skills}
+                  newSkill={newSkill}
+                  setNewSkill={setNewSkill}
+                  onAddSkill={() => {
+                    if (newSkill.trim()) {
+                      setPortfolioData({
+                        ...portfolioData,
+                        skills: [...portfolioData.skills, newSkill.trim()]
+                      });
+                      setNewSkill('');
+                    }
+                  }}
+                  onRemoveSkill={(idx) => {
+                    setPortfolioData({
+                      ...portfolioData,
+                      skills: portfolioData.skills.filter((_, i) => i !== idx)
+                    });
+                  }}
+                  inputClass={inputClass}
+                />
+
+                {/* Projects Section */}
+                <ProjectsSection
+                  projects={portfolioData.projects}
+                  setProjects={(projects) => setPortfolioData({...portfolioData, projects})}
+                  editingIdx={editingProjectIdx}
+                  setEditingIdx={setEditingProjectIdx}
+                  inputClass={inputClass}
+                />
+
+                {/* Education Section */}
+                <EducationSection
+                  education={portfolioData.education}
+                  setEducation={(education) => setPortfolioData({...portfolioData, education})}
+                  editingIdx={editingEducationIdx}
+                  setEditingIdx={setEditingEducationIdx}
+                  inputClass={inputClass}
+                />
+
+                {/* Experience Section */}
+                <ExperienceSection
+                  experience={portfolioData.experience}
+                  setExperience={(experience) => setPortfolioData({...portfolioData, experience})}
+                  editingIdx={editingExperienceIdx}
+                  setEditingIdx={setEditingExperienceIdx}
+                  inputClass={inputClass}
+                />
+
+                {/* Certifications Section */}
+                <CertificationsSection
+                  certifications={portfolioData.certifications}
+                  setCertifications={(certs) => setPortfolioData({...portfolioData, certifications: certs})}
+                  editingIdx={editingCertIdx}
+                  setEditingIdx={setEditingCertIdx}
+                  inputClass={inputClass}
+                />
+
+                {/* Action Buttons */}
+                <div className="space-y-3 mt-8">
+                  <button
+                    onClick={savePortfolio}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Save size={20} /> Save Portfolio
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                  >
+                    <FileDown size={20} /> Print / Download PDF
+                  </button>
+                  <button
+                    onClick={clearPortfolio}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={20} /> Clear Portfolio
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className={`border rounded-xl p-6 ${cardClass} max-h-[90vh] overflow-y-auto`}>
+              <PortfolioPreview data={portfolioData} darkMode={darkMode} />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const PortfolioPreview = ({ data, darkMode }) => {
+      const hasContent = data.fullName || data.professionalTitle || data.aboutMe || 
+                         data.skills.length > 0 || data.projects.length > 0 ||
+                         data.education.length > 0 || data.experience.length > 0 ||
+                         data.certifications.length > 0;
+
+      if (!hasContent) {
+        return (
+          <div className="flex items-center justify-center h-full text-center">
+            <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+              Create your portfolio by entering your details.
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-8 print:bg-white print:text-black print:p-8">
+          {/* Hero Section */}
+          {(data.fullName || data.professionalTitle || data.aboutMe) && (
+            <div className="text-center space-y-4">
+              {data.profilePhoto && (
+                <img
+                  src={data.profilePhoto}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-500"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+              {data.fullName && <h1 className="text-4xl font-bold">{data.fullName}</h1>}
+              {data.professionalTitle && <p className="text-xl text-blue-500 font-semibold">{data.professionalTitle}</p>}
+              {data.aboutMe && <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>{data.aboutMe}</p>}
+            </div>
+          )}
+
+          {/* Contact Section */}
+          {(data.email || data.phone || data.location || data.linkedin || data.github) && (
+            <div className={`flex flex-wrap justify-center gap-6 text-sm border-t border-b ${darkMode ? 'border-gray-700' : 'border-gray-300'} py-4`}>
+              {data.email && (
+                <a href={`mailto:${data.email}`} className="flex items-center gap-2 hover:text-blue-500">
+                  <Mail size={16} /> {data.email}
+                </a>
+              )}
+              {data.phone && (
+                <a href={`tel:${data.phone}`} className="flex items-center gap-2 hover:text-blue-500">
+                  <Phone size={16} /> {data.phone}
+                </a>
+              )}
+              {data.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} /> {data.location}
+                </div>
+              )}
+              {data.linkedin && (
+                <a href={data.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-500">
+                  <Linkedin size={16} /> LinkedIn
+                </a>
+              )}
+              {data.github && (
+                <a href={data.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-500">
+                  <Github size={16} /> GitHub
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Skills Section */}
+          {data.skills.length > 0 && (
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {data.skills.map((skill, i) => (
+                  <span key={i} className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Projects Section */}
+          {data.projects.length > 0 && (
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Projects</h3>
+              <div className="space-y-4">
+                {data.projects.map((project, i) => (
+                  <div key={i} className={`border rounded-lg p-4 ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                    <h4 className="font-bold text-lg">{project.name}</h4>
+                    {project.description && <p className="text-sm my-2">{project.description}</p>}
+                    {project.technologies && <p className="text-sm text-blue-500 mb-3">{project.technologies}</p>}
+                    <div className="flex gap-2">
+                      {project.githubUrl && (
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" 
+                           className="inline-flex items-center gap-2 text-blue-500 hover:underline text-sm">
+                          <Github size={16} /> GitHub
+                        </a>
+                      )}
+                      {project.liveUrl && (
+                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
+                           className="inline-flex items-center gap-2 text-blue-500 hover:underline text-sm">
+                          <ExternalLink size={16} /> Live Demo
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Education Section */}
+          {data.education.length > 0 && (
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Education</h3>
+              <div className="space-y-4">
+                {data.education.map((edu, i) => (
+                  <div key={i} className={`border-l-4 border-blue-500 pl-4`}>
+                    <h4 className="font-bold">{edu.degree}</h4>
+                    <p className="text-blue-500">{edu.institution}</p>
+                    <p className="text-sm text-gray-500">{edu.startYear} - {edu.endYear}</p>
+                    {edu.description && <p className="text-sm mt-2">{edu.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Experience Section */}
+          {data.experience.length > 0 && (
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Experience</h3>
+              <div className="space-y-4">
+                {data.experience.map((exp, i) => (
+                  <div key={i} className={`border-l-4 border-green-500 pl-4`}>
+                    <h4 className="font-bold">{exp.jobTitle}</h4>
+                    <p className="text-green-500">{exp.company}</p>
+                    <p className="text-sm text-gray-500">{exp.startDate} - {exp.endDate}</p>
+                    {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications Section */}
+          {data.certifications.length > 0 && (
+            <div>
+              <h3 className="text-2xl font-bold mb-4">Certifications</h3>
+              <div className="space-y-3">
+                {data.certifications.map((cert, i) => (
+                  <div key={i} className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold">{cert.name}</p>
+                      <p className="text-sm text-gray-500">{cert.organization} • {cert.date}</p>
+                    </div>
+                    {cert.credentialUrl && (
+                      <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <ExternalLink size={18} />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Skill Section Component
+    const SkillsSection = ({ skills, newSkill, setNewSkill, onAddSkill, onRemoveSkill, inputClass }) => {
+      return (
+        <div className="mb-6 pb-6 border-b border-gray-700">
+          <h4 className="font-semibold mb-4">Skills</h4>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Enter a skill"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && onAddSkill()}
+              className={`flex-1 border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <button
+              onClick={onAddSkill}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Plus size={18} /> Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((skill, i) => (
+              <div key={i} className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-2">
+                {skill}
+                <button onClick={() => onRemoveSkill(i)} className="hover:text-red-300">
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Projects Section Component
+    const ProjectsSection = ({ projects, setProjects, editingIdx, setEditingIdx, inputClass }) => {
+      const [newProject, setNewProject] = useState({ name: '', description: '', technologies: '', githubUrl: '', liveUrl: '' });
+
+      const addProject = () => {
+        if (newProject.name.trim()) {
+          if (editingIdx !== null) {
+            const updated = [...projects];
+            updated[editingIdx] = newProject;
+            setProjects(updated);
+            setEditingIdx(null);
+          } else {
+            setProjects([...projects, newProject]);
+          }
+          setNewProject({ name: '', description: '', technologies: '', githubUrl: '', liveUrl: '' });
+        }
+      };
+
+      const startEdit = (idx) => {
+        setNewProject(projects[idx]);
+        setEditingIdx(idx);
+      };
+
+      const removeProject = (idx) => {
+        setProjects(projects.filter((_, i) => i !== idx));
+      };
+
+      return (
+        <div className="mb-6 pb-6 border-b border-gray-700">
+          <h4 className="font-semibold mb-4">Projects</h4>
+          
+          <div className="space-y-3 mb-4 p-4 border rounded-lg border-gray-600">
+            <input
+              type="text"
+              placeholder="Project Name"
+              value={newProject.name}
+              onChange={(e) => setNewProject({...newProject, name: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <textarea
+              placeholder="Project Description"
+              value={newProject.description}
+              onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+              rows="2"
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="text"
+              placeholder="Technologies Used"
+              value={newProject.technologies}
+              onChange={(e) => setNewProject({...newProject, technologies: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="url"
+              placeholder="GitHub URL"
+              value={newProject.githubUrl}
+              onChange={(e) => setNewProject({...newProject, githubUrl: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="url"
+              placeholder="Live Demo URL"
+              value={newProject.liveUrl}
+              onChange={(e) => setNewProject({...newProject, liveUrl: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <button
+              onClick={addProject}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+            >
+              {editingIdx !== null ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingIdx !== null ? 'Update Project' : 'Add Project'}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {projects.map((proj, i) => (
+              <div key={i} className="flex justify-between items-start p-3 border rounded-lg border-gray-600">
+                <div>
+                  <p className="font-semibold">{proj.name}</p>
+                  <p className="text-sm text-gray-500">{proj.technologies}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => startEdit(i)} className="text-blue-500 hover:bg-blue-500 hover:text-white p-2 rounded">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => removeProject(i)} className="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded">
+                    <Trash size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Education Section Component
+    const EducationSection = ({ education, setEducation, editingIdx, setEditingIdx, inputClass }) => {
+      const [newEdu, setNewEdu] = useState({ degree: '', institution: '', startYear: '', endYear: '', description: '' });
+
+      const addEducation = () => {
+        if (newEdu.degree.trim() && newEdu.institution.trim()) {
+          if (editingIdx !== null) {
+            const updated = [...education];
+            updated[editingIdx] = newEdu;
+            setEducation(updated);
+            setEditingIdx(null);
+          } else {
+            setEducation([...education, newEdu]);
+          }
+          setNewEdu({ degree: '', institution: '', startYear: '', endYear: '', description: '' });
+        }
+      };
+
+      const startEdit = (idx) => {
+        setNewEdu(education[idx]);
+        setEditingIdx(idx);
+      };
+
+      return (
+        <div className="mb-6 pb-6 border-b border-gray-700">
+          <h4 className="font-semibold mb-4">Education</h4>
+          
+          <div className="space-y-3 mb-4 p-4 border rounded-lg border-gray-600">
+            <input
+              type="text"
+              placeholder="Degree/Course"
+              value={newEdu.degree}
+              onChange={(e) => setNewEdu({...newEdu, degree: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="text"
+              placeholder="Institution"
+              value={newEdu.institution}
+              onChange={(e) => setNewEdu({...newEdu, institution: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Start Year"
+                value={newEdu.startYear}
+                onChange={(e) => setNewEdu({...newEdu, startYear: e.target.value})}
+                className={`border rounded-lg px-4 py-2 ${inputClass}`}
+              />
+              <input
+                type="text"
+                placeholder="End Year"
+                value={newEdu.endYear}
+                onChange={(e) => setNewEdu({...newEdu, endYear: e.target.value})}
+                className={`border rounded-lg px-4 py-2 ${inputClass}`}
+              />
+            </div>
+            <textarea
+              placeholder="Description"
+              value={newEdu.description}
+              onChange={(e) => setNewEdu({...newEdu, description: e.target.value})}
+              rows="2"
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <button
+              onClick={addEducation}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+            >
+              {editingIdx !== null ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingIdx !== null ? 'Update Education' : 'Add Education'}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {education.map((edu, i) => (
+              <div key={i} className="flex justify-between items-start p-3 border rounded-lg border-gray-600">
+                <div>
+                  <p className="font-semibold">{edu.degree}</p>
+                  <p className="text-sm text-gray-500">{edu.institution} • {edu.startYear}-{edu.endYear}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => startEdit(i)} className="text-blue-500 hover:bg-blue-500 hover:text-white p-2 rounded">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => setEducation(education.filter((_, idx) => idx !== i))} className="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded">
+                    <Trash size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Experience Section Component
+    const ExperienceSection = ({ experience, setExperience, editingIdx, setEditingIdx, inputClass }) => {
+      const [newExp, setNewExp] = useState({ jobTitle: '', company: '', startDate: '', endDate: '', description: '' });
+
+      const addExperience = () => {
+        if (newExp.jobTitle.trim() && newExp.company.trim()) {
+          if (editingIdx !== null) {
+            const updated = [...experience];
+            updated[editingIdx] = newExp;
+            setExperience(updated);
+            setEditingIdx(null);
+          } else {
+            setExperience([...experience, newExp]);
+          }
+          setNewExp({ jobTitle: '', company: '', startDate: '', endDate: '', description: '' });
+        }
+      };
+
+      const startEdit = (idx) => {
+        setNewExp(experience[idx]);
+        setEditingIdx(idx);
+      };
+
+      return (
+        <div className="mb-6 pb-6 border-b border-gray-700">
+          <h4 className="font-semibold mb-4">Experience</h4>
+          
+          <div className="space-y-3 mb-4 p-4 border rounded-lg border-gray-600">
+            <input
+              type="text"
+              placeholder="Job Title"
+              value={newExp.jobTitle}
+              onChange={(e) => setNewExp({...newExp, jobTitle: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="text"
+              placeholder="Company"
+              value={newExp.company}
+              onChange={(e) => setNewExp({...newExp, company: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Start Date"
+                value={newExp.startDate}
+                onChange={(e) => setNewExp({...newExp, startDate: e.target.value})}
+                className={`border rounded-lg px-4 py-2 ${inputClass}`}
+              />
+              <input
+                type="text"
+                placeholder="End Date"
+                value={newExp.endDate}
+                onChange={(e) => setNewExp({...newExp, endDate: e.target.value})}
+                className={`border rounded-lg px-4 py-2 ${inputClass}`}
+              />
+            </div>
+            <textarea
+              placeholder="Description"
+              value={newExp.description}
+              onChange={(e) => setNewExp({...newExp, description: e.target.value})}
+              rows="2"
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <button
+              onClick={addExperience}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+            >
+              {editingIdx !== null ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingIdx !== null ? 'Update Experience' : 'Add Experience'}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {experience.map((exp, i) => (
+              <div key={i} className="flex justify-between items-start p-3 border rounded-lg border-gray-600">
+                <div>
+                  <p className="font-semibold">{exp.jobTitle}</p>
+                  <p className="text-sm text-gray-500">{exp.company} • {exp.startDate}-{exp.endDate}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => startEdit(i)} className="text-blue-500 hover:bg-blue-500 hover:text-white p-2 rounded">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => setExperience(experience.filter((_, idx) => idx !== i))} className="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded">
+                    <Trash size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Certifications Section Component
+    const CertificationsSection = ({ certifications, setCertifications, editingIdx, setEditingIdx, inputClass }) => {
+      const [newCert, setNewCert] = useState({ name: '', organization: '', date: '', credentialUrl: '' });
+
+      const addCertification = () => {
+        if (newCert.name.trim()) {
+          if (editingIdx !== null) {
+            const updated = [...certifications];
+            updated[editingIdx] = newCert;
+            setCertifications(updated);
+            setEditingIdx(null);
+          } else {
+            setCertifications([...certifications, newCert]);
+          }
+          setNewCert({ name: '', organization: '', date: '', credentialUrl: '' });
+        }
+      };
+
+      const startEdit = (idx) => {
+        setNewCert(certifications[idx]);
+        setEditingIdx(idx);
+      };
+
+      return (
+        <div className="mb-6">
+          <h4 className="font-semibold mb-4">Certifications</h4>
+          
+          <div className="space-y-3 mb-4 p-4 border rounded-lg border-gray-600">
+            <input
+              type="text"
+              placeholder="Certification Name"
+              value={newCert.name}
+              onChange={(e) => setNewCert({...newCert, name: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="text"
+              placeholder="Issuing Organization"
+              value={newCert.organization}
+              onChange={(e) => setNewCert({...newCert, organization: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="text"
+              placeholder="Date"
+              value={newCert.date}
+              onChange={(e) => setNewCert({...newCert, date: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <input
+              type="url"
+              placeholder="Credential URL"
+              value={newCert.credentialUrl}
+              onChange={(e) => setNewCert({...newCert, credentialUrl: e.target.value})}
+              className={`w-full border rounded-lg px-4 py-2 ${inputClass}`}
+            />
+            <button
+              onClick={addCertification}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+            >
+              {editingIdx !== null ? <Pencil size={18} /> : <Plus size={18} />}
+              {editingIdx !== null ? 'Update Certification' : 'Add Certification'}
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {certifications.map((cert, i) => (
+              <div key={i} className="flex justify-between items-start p-3 border rounded-lg border-gray-600">
+                <div>
+                  <p className="font-semibold">{cert.name}</p>
+                  <p className="text-sm text-gray-500">{cert.organization} • {cert.date}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => startEdit(i)} className="text-blue-500 hover:bg-blue-500 hover:text-white p-2 rounded">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => setCertifications(certifications.filter((_, idx) => idx !== i))} className="text-red-500 hover:bg-red-500 hover:text-white p-2 rounded">
+                    <Trash size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Render the app
+    ReactDOM.render(<CodeMateApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
